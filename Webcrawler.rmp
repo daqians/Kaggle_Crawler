@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?><process version="9.3.001">
+  <context>
+    <input/>
+    <output/>
+    <macros/>
+  </context>
+  <operator activated="true" class="process" compatibility="9.3.001" expanded="true" name="Process">
+    <parameter key="logverbosity" value="init"/>
+    <parameter key="random_seed" value="2001"/>
+    <parameter key="send_mail" value="never"/>
+    <parameter key="notification_email" value=""/>
+    <parameter key="process_duration_for_mail" value="30"/>
+    <parameter key="encoding" value="SYSTEM"/>
+    <process expanded="true">
+      <operator activated="true" class="set_macros" compatibility="9.3.001" expanded="true" height="82" name="Set Macros" width="90" x="45" y="136">
+        <list key="macros">
+          <parameter key="target_url" value="'https://www.kaggle.com/requests/SearchDatasetsRequest'"/>
+          <parameter key="header" value="{ 'authority': 'www.kaggle.com', 'method': 'POST', 'path': '/requests/SearchDatasetsRequest', 'scheme': 'https', '__requestverificationtoken': 'CfDJ8LdUzqlsSWBPr4Ce3rb9VL9IEiNRmeWffNDibvdonPkfK_wd-PetLow-LM0aSEhQvAFKjxSgHKdYwIiiJ4cEpiO8h4IWgdhXlcm_Uxcf3nUz4Db_0K4zgMB3Oo6I8tLvpij72P6F1pxMIXnNvAw_-gE', 'accept': 'application/json', 'accept-encoding': 'gzip, deflate, br', 'accept-language': 'en-GB,en-US;q=0.9,en;q=0.8', 'content-length': '254', 'content-type': 'application/json', 'cookie': '_ga=GA1.2.1546911879.1563354424; _gaexp=GAX1.2.UBHXFASnTVOKSguMuh4U-A.18160.0; _fbp=fb.1.1563354426408.1965962968; intercom-id-koj6gxx6=e0c93115-dc3e-4bd9-b4e0-c6a6136ed76d; ka_sessionid=e7af785f9517e7a7fe848f14ec35d68fcd946639; CSRF-TOKEN=CfDJ8LdUzqlsSWBPr4Ce3rb9VL-8g_nFG2fHUinlSTvj_TZrCij5m7xnabxQRF5JXJUZq1v4gEn6699ePBlnMBkP47MUVSmjYgtw92PGj-MV1nbHv689RsEW4D560uA--966wKLoFdyAlWzCyK_I8Y4zONE; XSRF-TOKEN=CfDJ8LdUzqlsSWBPr4Ce3rb9VL9IEiNRmeWffNDibvdonPkfK_wd-PetLow-LM0aSEhQvAFKjxSgHKdYwIiiJ4cEpiO8h4IWgdhXlcm_Uxcf3nUz4Db_0K4zgMB3Oo6I8tLvpij72P6F1pxMIXnNvAw_-gE; GCLB=CLS5gujLt5n4aw; _gid=GA1.2.1954907931.1567259096', 'origin': 'https://www.kaggle.com', 'referer': 'https://www.kaggle.com/datasets', 'sec-fetch-mode': 'cors', 'sec-fetch-site': 'same-origin', 'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36', 'x-xsrf-token': 'CfDJ8LdUzqlsSWBPr4Ce3rb9VL9IEiNRmeWffNDibvdonPkfK_wd-PetLow-LM0aSEhQvAFKjxSgHKdYwIiiJ4cEpiO8h4IWgdhXlcm_Uxcf3nUz4Db_0K4zgMB3Oo6I8tLvpij72P6F1pxMIXnNvAw_-gE', }"/>
+          <parameter key="body" value="{ 'categoryIds': [], 'fileType': &quot;all&quot;, 'group': &quot;public&quot;, 'isUserQuery': False, 'license': &quot;all&quot;, 'page': 0, 'search': &quot;&quot;, 'size': &quot;all&quot;, 'sortBy': &quot;hottest&quot;, 'viewed': &quot;all&quot;, 'id' : None, 'maintainerOrganizationId': None, 'maxSize': None, 'minSize': None, 'organizationId': None }"/>
+          <parameter key="range_url" value="1"/>
+          <parameter key="save_p" value="/Users/jxsdq/.RapidMiner/repositories/Local Repository/data"/>
+        </list>
+        <description align="center" color="transparent" colored="false" width="126">Set parameters</description>
+      </operator>
+      <operator activated="true" class="python_scripting:execute_python" compatibility="9.3.001" expanded="true" height="103" name="Execute Python" width="90" x="246" y="136">
+        <parameter key="script" value="import requests&#10;import csv&#10;import json&#10;import time&#10;from selenium import webdriver&#10;from selenium.webdriver.chrome.options import Options&#10;from bs4 import BeautifulSoup&#10;import pandas as pd&#10;&#10;def rm_main():&#10;    body_n = %{body}&#10;    header_n = %{header}&#10;    page = 0&#10;    Kaggle_url = 'https://www.kaggle.com'&#10;    address_data = []&#10;    for i in range(%{range_url}):&#10;        page+=1&#10;        try:&#10;            body_n['page'] = page&#10;            req = requests.post(%{target_url}, headers=header_n, data = json.dumps(body_n))&#10;            content = req.json()&#10;            print('crawling:', page)&#10;            for c in content['result']['items']:&#10;                if c != []:&#10;                    data = []&#10;                    data.append(c['title'])&#10;                    data.append(Kaggle_url+c['datasetUrl'])&#10;                    data.append(c['ownerName'])&#10;                    data.append(Kaggle_url+c['ownerUrl'])&#10;                    address_data.append(data)&#10;                print(data)&#10;        except:&#10;            print('fail: ', page)&#10;&#10;        time.sleep(3)&#10;    &#10;    DF = pd.DataFrame(columns=('title', 'address', 'ownerName', 'ownerUrl'))&#10;    for i in address_data:&#10;        title=i[0]&#10;        address=i[1]&#10;        ownerName=i[2]&#10;        ownerUrl=i[3]&#10;        DF=DF.append(pd.DataFrame({'title':[title],'address':[address],'ownerName':[ownerName],'ownerUrl':[ownerUrl]}))&#10;    return DF, address_data&#10;"/>
+        <parameter key="notebook_cell_tag_filter" value=""/>
+        <parameter key="use_default_python" value="false"/>
+        <parameter key="package_manager" value="conda (anaconda)"/>
+        <parameter key="conda_environment" value="base"/>
+        <description align="center" color="transparent" colored="false" width="126">Get datasets' homepages</description>
+      </operator>
+      <operator activated="true" class="python_scripting:execute_python" compatibility="9.3.001" expanded="true" height="103" name="Execute Python (3)" width="90" x="380" y="238">
+        <parameter key="script" value="import requests&#10;import csv&#10;import json&#10;import time&#10;from selenium import webdriver&#10;from selenium.webdriver.chrome.options import Options&#10;from bs4 import BeautifulSoup&#10;import pandas as pd&#10;&#10;# rm_main is a mandatory function, &#10;# the number of arguments has to be the number of input ports (can be none)&#10;def detail_info(link):&#10;    chrome_options = Options()&#10;    chrome_options.add_argument('--headless')&#10;    chrome_options.add_argument('--disable-gpu')&#10;    prefs = {&#10;        'profile.default_content_setting_values': {&#10;            'images': 2,&#10;        }&#10;    }&#10;    chrome_options.add_experimental_option(&quot;prefs&quot;, prefs)&#10;    driver = webdriver.Chrome(chrome_options=chrome_options)&#10;&#10;    driver.set_window_size(1920, 4000)&#10;    driver.get(link)&#10;    js = 'var q=document.documentElement.scrollTop=10000'&#10;    driver.execute_script(js)&#10;    time.sleep(3)&#10;&#10;    homepage = BeautifulSoup(driver.page_source, 'lxml')&#10;    tags = homepage.find('meta', attrs={'name': 'keywords'}).get('content')&#10;    columns = homepage.find_all('span', class_='DataExplorerColumns_ColumnName-sc-1tzfrn7 fqEMUL')&#10;    col = []&#10;    for c in columns:&#10;        col.append(c.get_text())&#10;    return tags,col&#10; &#10;def rm_main(address_data):&#10;    fin_data = []&#10;    for data in address_data:&#10;        try:&#10;            tags, cols = detail_info(data[1])&#10;            for c in cols:&#10;                d = []&#10;                d.append(data[0])&#10;                d.append(data[1])&#10;                d.append(data[2])&#10;                d.append(data[3])&#10;                d.append(tags)&#10;                d.append(c)&#10;                fin_data.append(d)&#10;                print('get:',d)&#10;        except:&#10;            print(&quot;fail:&quot;, data[0])&#10;&#10;    DF = pd.DataFrame(columns=('title', 'address', 'ownerName', 'ownerUrl','tags','column'))&#10;    for i in fin_data:&#10;        title=i[0]&#10;        address=i[1]&#10;        ownerName=i[2]&#10;        ownerUrl=i[3]&#10;        tags=i[4]&#10;        column=i[5]&#10;        DF=DF.append(pd.DataFrame({'title':[title],'address':[address],'ownerName':[ownerName],'ownerUrl':[ownerUrl],'tags':[tags],'column':[column]}))&#10;&#10;    return DF"/>
+        <parameter key="notebook_cell_tag_filter" value=""/>
+        <parameter key="use_default_python" value="false"/>
+        <parameter key="package_manager" value="conda (anaconda)"/>
+        <parameter key="conda_environment" value="base"/>
+        <description align="center" color="transparent" colored="false" width="126">Get details from datasets</description>
+      </operator>
+      <operator activated="true" class="multiply" compatibility="9.3.001" expanded="true" height="103" name="Multiply" width="90" x="581" y="289"/>
+      <operator activated="true" class="write_csv" compatibility="9.3.001" expanded="true" height="82" name="Write CSV (2)" width="90" x="715" y="340">
+        <parameter key="csv_file" value="%{save_p}/aab.csv"/>
+        <parameter key="column_separator" value=","/>
+        <parameter key="write_attribute_names" value="true"/>
+        <parameter key="quote_nominal_values" value="true"/>
+        <parameter key="format_date_attributes" value="true"/>
+        <parameter key="append_to_file" value="false"/>
+        <parameter key="encoding" value="SYSTEM"/>
+        <description align="center" color="transparent" colored="false" width="126">write detaills of datasets in CSV doc</description>
+      </operator>
+      <operator activated="true" class="multiply" compatibility="9.3.001" expanded="true" height="103" name="Multiply (2)" width="90" x="447" y="34"/>
+      <operator activated="true" class="write_csv" compatibility="9.3.001" expanded="true" height="82" name="Write CSV" width="90" x="581" y="85">
+        <parameter key="csv_file" value="%{save_p}/aaa.csv"/>
+        <parameter key="column_separator" value=","/>
+        <parameter key="write_attribute_names" value="true"/>
+        <parameter key="quote_nominal_values" value="true"/>
+        <parameter key="format_date_attributes" value="true"/>
+        <parameter key="append_to_file" value="false"/>
+        <parameter key="encoding" value="SYSTEM"/>
+        <description align="center" color="transparent" colored="false" width="126">write datasets' metadata in CSV doc</description>
+      </operator>
+      <connect from_op="Set Macros" from_port="through 1" to_op="Execute Python" to_port="input 1"/>
+      <connect from_op="Execute Python" from_port="output 1" to_op="Multiply (2)" to_port="input"/>
+      <connect from_op="Execute Python" from_port="output 2" to_op="Execute Python (3)" to_port="input 1"/>
+      <connect from_op="Execute Python (3)" from_port="output 1" to_op="Multiply" to_port="input"/>
+      <connect from_op="Multiply" from_port="output 1" to_port="result 2"/>
+      <connect from_op="Multiply" from_port="output 2" to_op="Write CSV (2)" to_port="input"/>
+      <connect from_op="Multiply (2)" from_port="output 1" to_port="result 1"/>
+      <connect from_op="Multiply (2)" from_port="output 2" to_op="Write CSV" to_port="input"/>
+      <portSpacing port="source_input 1" spacing="0"/>
+      <portSpacing port="sink_result 1" spacing="0"/>
+      <portSpacing port="sink_result 2" spacing="0"/>
+      <portSpacing port="sink_result 3" spacing="0"/>
+    </process>
+  </operator>
+</process>
